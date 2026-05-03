@@ -1,0 +1,6 @@
+{
+  "name": "Phần mềm Học tập Chính trị Quân đội",
+  "description": "Hệ thống quản lý học tập, nghiên cứu nghị quyết, tra cứu tài liệu và thi trắc nghiệm chính trị dành cho quân nhân.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": []
+}

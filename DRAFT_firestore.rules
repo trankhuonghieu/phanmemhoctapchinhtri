@@ -1,0 +1,123 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && getUserData().role == 'admin';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Helpers ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['fullName', 'rank', 'unit', 'role']) 
+             && data.fullName is string && data.fullName.size() <= 100
+             && data.rank is string && data.unit is string
+             && data.role in ['admin', 'user'];
+    }
+
+    function isValidNews(data) {
+      return data.keys().hasAll(['title', 'content', 'category', 'createdAt'])
+             && data.title is string && data.title.size() <= 200
+             && data.content is string && data.content.size() <= 10000
+             && data.category in ['domestic', 'international', 'military']
+             && data.createdAt == request.time;
+    }
+
+    function isValidResolution(data) {
+      return data.keys().hasAll(['title', 'content', 'updatedAt'])
+             && data.title is string && data.title.size() <= 200
+             && data.content is string
+             && data.updatedAt == request.time;
+    }
+
+    function isValidQuizResult(data) {
+      return data.keys().hasAll(['userId', 'score', 'type', 'finishedAt'])
+             && data.userId == request.auth.uid
+             && data.score is number && data.score >= 0 && data.score <= 100
+             && data.type in ['trial', 'official']
+             && data.finishedAt == request.time;
+    }
+
+    // --- Collection Rules ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming()) 
+                   && incoming().role == 'user'; // Prevent self-elevating to admin
+      allow update: if isOwner(userId) && isValidUser(incoming())
+                   && incoming().role == existing().role // Immutable role
+                   && incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'rank', 'position', 'unit', 'lastAccess', 'totalStudyHours', 'bestOfficialScore']);
+      allow delete: if isAdmin();
+    }
+
+    match /news/{newsId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() && isValidNews(incoming());
+      allow update: if isAdmin() && isValidNews(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /resolutions/{resId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() && isValidResolution(incoming());
+      allow update: if isAdmin() && isValidResolution(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /library/{docId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /notifications/{notifId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /questions/{qId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /quizResults/{resId} {
+      allow list: if isOwner(incoming().userId) || isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow get: if isOwner(existing().userId) || isAdmin();
+      allow create: if isOwner(incoming().userId) && isValidQuizResult(incoming());
+      allow update, delete: if isAdmin();
+    }
+  }
+}

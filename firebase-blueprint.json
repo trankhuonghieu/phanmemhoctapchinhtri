@@ -1,0 +1,156 @@
+{
+  "entities": {
+    "User": {
+      "title": "Quân nhân",
+      "description": "Thông tin chi tiết về quân nhân và kết quả học tập",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "rank": { "type": "string" },
+        "position": { "type": "string" },
+        "unit": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "lastAccess": { "type": "string", "format": "date-time" },
+        "totalStudyHours": { "type": "number" },
+        "bestOfficialScore": { "type": "number" }
+      },
+      "required": ["fullName", "rank", "unit", "role"]
+    },
+    "News": {
+      "title": "Tin tức chính trị",
+      "description": "Bài viết, video tuyên truyền chính trị",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string", "enum": ["domestic", "international", "military"] },
+        "imageUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "authorId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "category", "createdAt"]
+    },
+    "Resolution": {
+      "title": "Nghị quyết",
+      "description": "Nội dung học tập nghị quyết của Đảng và Quân đội",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileName": { "type": "string" },
+        "authorId": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "updatedAt"]
+    },
+    "Document": {
+      "title": "Tài liệu thư viện",
+      "description": "Lưu trữ văn bản, file PDF, audio tuyên truyền",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["pdf", "audio", "doc", "other"] },
+        "fileUrl": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "type", "fileUrl", "createdAt"]
+    },
+    "Notification": {
+      "title": "Thông báo nội bộ",
+      "description": "Thông báo tình hình chính trị nội bộ",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "createdAt"]
+    },
+    "Question": {
+      "title": "Câu hỏi trắc nghiệm",
+      "description": "Câu hỏi dùng cho ôn tập và thi chính trị",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctIndex": { "type": "integer" },
+        "category": { "type": "string" }
+      },
+      "required": ["text", "options", "correctIndex"]
+    },
+    "QuizResult": {
+      "title": "Kết quả thi",
+      "description": "Lưu kết quả các bài thi thử và thi chính thức",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "score": { "type": "number" },
+        "correctCount": { "type": "integer" },
+        "totalCount": { "type": "integer" },
+        "type": { "type": "string", "enum": ["trial", "official"] },
+        "finishedAt": { "type": "string", "format": "date-time" },
+        "duration": { "type": "integer" }
+      },
+      "required": ["userId", "score", "type", "finishedAt"]
+    },
+    "Broadcast": {
+      "title": "Phát thanh tuyên truyền",
+      "description": "Lịch phát thanh tự động từ tài liệu văn bản",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "sourceFileUrl": { "type": "string" },
+        "sourceFileName": { "type": "string" },
+        "voiceType": { "type": "string", "enum": ["google_male", "google_female", "recorded"] },
+        "audioUrl": { "type": "string" },
+        "scheduledAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "playing", "completed"] },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["title", "voiceType", "scheduledAt", "status"]
+    },
+    "AudioRecording": {
+      "title": "Bản thu âm",
+      "description": "File âm thanh thu trực tiếp hoặc tải lên",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string" },
+        "type": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["name", "url", "createdAt"]
+    },
+    "QuizSystemSetting": {
+      "title": "Cấu hình hệ thống thi",
+      "description": "Trạng thái đóng/mở của hệ thống ôn tập và thi cử",
+      "type": "object",
+      "properties": {
+        "isOpen": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      },
+      "required": ["isOpen", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "users": { "schema": "User", "description": "Thông tin quân nhân" },
+    "news": { "schema": "News", "description": "Tin tức chính trị" },
+    "resolutions": { "schema": "Resolution", "description": "Nghị quyết học tập" },
+    "library": { "schema": "Document", "description": "Thư viện tài liệu" },
+    "notifications": { "schema": "Notification", "description": "Thông báo nội bộ" },
+    "questions": { "schema": "Question", "description": "Ngân hàng câu hỏi" },
+    "quizResults": { "schema": "QuizResult", "description": "Lịch sử thi cử" },
+    "broadcasts": { "schema": "Broadcast", "description": "Lịch phát thanh tuyên truyền tự động" },
+    "audio_library": { "schema": "AudioRecording", "description": "Thư viện bản thu âm" },
+    "settings": { "schema": "QuizSystemSetting", "description": "Cài đặt hệ thống" }
+  }
+}

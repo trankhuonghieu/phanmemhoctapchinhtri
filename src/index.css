@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --color-military-red: #991b1b;
+  --color-military-red-dark: #7f1d1d;
+  --color-military-yellow: #facc15;
+  --color-military-yellow-dark: #eab308;
+  --color-military-gold: #fbbf24;
+  
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900;
+    font-family: var(--font-sans);
+  }
+}
+
+@layer components {
+  .btn-military {
+    @apply relative px-6 py-2.5 rounded-full font-bold transition-all duration-200 
+           bg-military-red text-white shadow-md active:scale-95 active:translate-y-0.5
+           hover:brightness-110 flex items-center justify-center gap-2;
+  }
+  
+  .card-3d {
+    @apply bg-white rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1),0_8px_10px_-6px_rgba(0,0,0,0.1)] 
+           border border-slate-100;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none 
+           focus:ring-2 focus:ring-military-red/20 focus:border-military-red transition-all;
+  }
+}

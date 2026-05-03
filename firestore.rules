@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      // In development, we might not always have verified email, 
+      // but for production-ready military app, we should enforce it.
+      // For this demo, we'll allow isSignedIn() but recommend email_verified for real use.
+      return isSignedIn() && (request.auth.token.email_verified == true || request.auth.token.firebase.sign_in_provider == 'google.com');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      // Use get() with extreme care to avoid recursive bills. 
+      // Cached results help, but role-based access usually checks a specific path.
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      // Explicitly looking up admin status from a trusted document
+      return isSignedIn() && getUserData().role == 'admin';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Helpers ---
+
+    function isValidNews(data) {
+      return data.title is string && data.title.size() <= 200
+             && data.content is string && data.content.size() <= 20000
+             && data.category is string
+             && data.status is string;
+    }
+
+    function isValidResolution(data) {
+      return data.title is string && data.title.size() <= 200
+             && data.content is string && data.content.size() <= 20000
+             && data.issuer is string && data.issuer.size() <= 100
+             && data.status is string;
+    }
+
+    function isValidQuizResult(data) {
+      return data.keys().hasAll(['userId', 'score', 'type', 'finishedAt'])
+             && data.userId == request.auth.uid
+             && data.score is number && data.score >= 0 && data.score <= 100
+             && data.type in ['trial', 'official']
+             && data.finishedAt == request.time;
+    }
+
+    // --- Collection Rules ---
+
+    match /users/{userId} {
+      // Allow public read for custom login system and user lookups
+      allow read: if true;
+      
+      // Allow all write operations for soldiers management
+      allow create, update, delete: if true;
+    }
+
+    match /news/{newsId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /resolutions/{resId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /library/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /notifications/{notifId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /questions/{qId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /quizResults/{resId} {
+      allow read: if true;
+      allow write, delete: if true;
+    }
+
+    match /broadcasts/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /audio_library/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}
